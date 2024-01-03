@@ -31,6 +31,8 @@
                 <VBox spacing="10" alignment="CENTER">
                     <RadioButton text="Наш цех" fx:id="ourCraftRadioButton" toggleGroup="$radioButtonGroup"/>
                     <RadioButton text="Усі цехи" fx:id="allCraftsRadioButton" toggleGroup="$radioButtonGroup"/>
+                    <RadioButton text="Зберігти звіт" fx:id="saveZvit"/>
+                    <RadioButton text="Вивести графіку" fx:id="showGraphic"/>
 
                     <HBox spacing="10">
                         <Label text="Початкова дата:" />
@@ -82,8 +84,9 @@
 
             <Tab text="Замовити">
                 <VBox spacing="10" alignment="CENTER">
-                    <Label text="Назва товару"/>
-                    <TextField fx:id="productNameField"/>
+                    <Label text="Назва продукції"/>
+                    <ComboBox fx:id="productComboBox2" />
+
                     <Label text="Кількість"/>
                     <TextField fx:id="quantityField"/>
                     <Button fx:id="update" text="Замовити" onAction="#deliver"/>
@@ -93,7 +96,7 @@
             <Tab text="Додати продукцію">
                 <VBox spacing="10" alignment="CENTER">
                     <Label text="Назва продукції"/>
-                    <TextField fx:id="newProductNameField"/>
+                    <TextField fx:id="productNameField"/>
                     <Label text="Опис продукції"/>
                     <TextArea fx:id="newProductDescriptionArea"/>
                     <Button text="Додати" onAction="#addNewProduct"/>
