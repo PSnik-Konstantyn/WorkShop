@@ -1,5 +1,9 @@
 package com.example.workshop;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -11,6 +15,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
@@ -51,6 +58,9 @@ public class WorkController {
     public ComboBox productComboBox;
     public TextField newComponentNameField;
     public TextField newComponentQuantityField;
+    public ComboBox productComboBox2;
+    public RadioButton saveZvit;
+    public RadioButton showGraphic;
     @FXML
     private Label specializationField;
     @FXML
@@ -114,6 +124,7 @@ public class WorkController {
             areWeTheBestField.setText("Треба працювати краще!");
         }
         updateProductComboBox();
+        updateProductComboBox2();
     }
 
     private int getProducedQuantityForCraft(int craftNumber) {
@@ -159,11 +170,11 @@ public class WorkController {
 
     @FXML
     private void deliver(ActionEvent event) {
-        String productName = productNameField.getText();
+        String productName = (String) productComboBox2.getValue();
         String quantityStr = quantityField.getText();
 
-        if (productName.isEmpty() || quantityStr.isEmpty()) {
-            productNameField.setText("Будь ласка, заповніть всі поля");
+        if (productName == null || quantityStr.isEmpty()) {
+            quantityField.setText("Будь ласка, заповніть всі поля");
             return;
         }
 
@@ -185,15 +196,15 @@ public class WorkController {
                     statement.executeUpdate();
                 }
             } catch (SQLException e) {
-                productNameField.setText("Щось пішло не так! Введіть корректну назву та спробуйте ще.");
+                quantityField.setText("Щось пішло не так! Введіть корректну назву та спробуйте ще.");
                 e.printStackTrace();
             }
-            productNameField.clear();
+            quantityField.clear();
             quantityField.clear();
 
-            productNameField.setText("Замовлення успішно виконано!");
+            quantityField.setText("Замовлення успішно виконано!");
         } catch (NumberFormatException e) {
-            productNameField.setText("Будь ласка, введіть коректну кількість товару");
+            quantityField.setText("Будь ласка, введіть коректну кількість товару");
         }
     }
 
@@ -291,7 +302,7 @@ public class WorkController {
     }
 
     @FXML
-    private void showZvit() throws SQLException {
+    private void showZvit() throws SQLException, FileNotFoundException, DocumentException {
         Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/updatedDb", "root", "pass0000");
 
         String query;
@@ -343,7 +354,52 @@ public class WorkController {
             nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
             quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
             componentTableView.setItems(componentData);
+            if (saveZvit.isSelected()) {
+                Document document = new Document();
+                PdfWriter.getInstance(document, new FileOutputStream("/home/kostiantyn/IdeaProjects/WorkShop/src/main/resources/com/example/workshop/zvit_report.pdf"));
 
+                document.open();
+                document.add(new Paragraph(""));
+
+                document.add(new Paragraph("Report Dates: " + startDate + " to " + endDate));
+                if (ourCraftRadioButton.isSelected()) {
+                    document.add(new Paragraph("Craft Number: " + craftNumber));
+                } else {
+                    document.add(new Paragraph("Craft: All"));
+                }
+
+                document.add(new Paragraph("\nList of Productions:"));
+                document.add(new Paragraph("\n"));
+                PdfPTable table = new PdfPTable(2); // 2 columns
+                table.setWidthPercentage(100);
+
+                table.addCell(getCell("Production Name", true));
+                table.addCell(getCell("Production Quantity", true));
+
+                for (Production production : productionData) {
+                    table.addCell(getCell(production.getName()));
+                    table.addCell(getCell(String.valueOf(production.getQuantity())));
+                }
+
+                document.add(table);
+                document.add(new Paragraph("\nList of Components:"));
+                document.add(new Paragraph("\n"));
+
+                PdfPTable componentTable = new PdfPTable(2);
+                componentTable.setWidthPercentage(100);
+
+                componentTable.addCell(getCell("Component Name", true));
+                componentTable.addCell(getCell("Component Quantity", true));
+
+                for (Component component : componentData) {
+                    componentTable.addCell(getCell(component.getName()));
+                    componentTable.addCell(getCell(String.valueOf(component.getQuantity())));
+                }
+
+                document.add(componentTable);
+
+                document.close();
+            }
             resultSet.close();
             preparedStatement.close();
         } else {
@@ -391,6 +447,52 @@ public class WorkController {
             quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
             componentTableView.setItems(componentData);
 
+            if (saveZvit.isSelected()) {
+                Document document = new Document();
+                PdfWriter.getInstance(document, new FileOutputStream("/home/kostiantyn/IdeaProjects/WorkShop/src/main/resources/com/example/workshop/zvit_report.pdf"));
+
+                document.open();
+                document.add(new Paragraph(""));
+
+                document.add(new Paragraph("Report Dates: " + startDate + " to " + endDate));
+                if (ourCraftRadioButton.isSelected()) {
+                    document.add(new Paragraph("Craft Number: " + craftNumber));
+                } else {
+                    document.add(new Paragraph("Craft: All"));
+                }
+
+                document.add(new Paragraph("\nList of Productions:"));
+                document.add(new Paragraph("\n"));
+                PdfPTable table = new PdfPTable(2); // 2 columns
+                table.setWidthPercentage(100);
+
+                table.addCell(getCell("Production Name", true));
+                table.addCell(getCell("Production Quantity", true));
+
+                for (Production production : productionData) {
+                    table.addCell(getCell(production.getName()));
+                    table.addCell(getCell(String.valueOf(production.getQuantity())));
+                }
+
+                document.add(table);
+                document.add(new Paragraph("\nList of Components:"));
+                document.add(new Paragraph("\n"));
+
+                PdfPTable componentTable = new PdfPTable(2);
+                componentTable.setWidthPercentage(100);
+
+                componentTable.addCell(getCell("Component Name", true));
+                componentTable.addCell(getCell("Component Quantity", true));
+
+                for (Component component : componentData) {
+                    componentTable.addCell(getCell(component.getName()));
+                    componentTable.addCell(getCell(String.valueOf(component.getQuantity())));
+                }
+
+                document.add(componentTable);
+
+                document.close();
+            }
             resultSet.close();
             preparedStatement.close();
         }
@@ -569,6 +671,42 @@ public class WorkController {
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
                     productComboBox.getItems().add(resultSet.getString("Name"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private PdfPCell getCell(String text, boolean header) {
+        PdfPCell cell = new PdfPCell(new Paragraph(text));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(8);
+
+        if (header) {
+            cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+        }
+
+        return cell;
+    }
+
+    // Метод для отримання PdfPCell з текстом
+    private PdfPCell getCell(String text) {
+        return getCell(text, false);
+    }
+
+    private void updateProductComboBox2() {
+        productComboBox2.getItems().clear();
+
+        try {
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/updatedDb", "root", "pass0000");
+
+            String sql = "SELECT Name FROM Production";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    productComboBox2.getItems().add(resultSet.getString("Name"));
                 }
             }
         } catch (SQLException e) {
