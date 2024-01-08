@@ -11,8 +11,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 
@@ -61,6 +64,8 @@ public class WorkController {
     public ComboBox productComboBox2;
     public RadioButton saveZvit;
     public RadioButton showGraphic;
+    public VBox graphContainer;
+    public LineChart productionChart;
     @FXML
     private Label specializationField;
     @FXML
@@ -192,7 +197,6 @@ public class WorkController {
                     statement.setInt(2, this.craftNumber);
                     statement.setString(3, productName);
                     statement.setInt(4, quantity);
-
                     statement.executeUpdate();
                 }
             } catch (SQLException e) {
@@ -308,7 +312,28 @@ public class WorkController {
         String query;
         Date startDate = Date.valueOf(startDatePicker.getValue());
         Date endDate = Date.valueOf(endDatePicker.getValue());
+        if (showGraphic.isSelected()) {
+            query = "SELECT mt.data, SUM(mt.AmountOfProduction) as Total " +
+                    "FROM Task mt " +
+                    "WHERE mt.data BETWEEN ? AND ? " +
+                    "GROUP BY mt.data ORDER BY mt.data";
 
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setDate(1, startDate);
+            preparedStatement.setDate(2, endDate);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            XYChart.Series<String, Integer> series = new XYChart.Series<>();
+            while (resultSet.next()) {
+                String dateString = resultSet.getDate("data").toLocalDate().toString();
+                series.getData().add(new XYChart.Data<>(dateString, resultSet.getInt("Total")));
+            }
+            productionChart.getData().setAll(series);
+
+            resultSet.close();
+            preparedStatement.close();
+        }
         if (ourCraftRadioButton.isSelected()) {
             query = "SELECT p.Name, SUM(mt.AmountOfProduction) as Total " +
                     "FROM Production p " +
@@ -344,7 +369,6 @@ public class WorkController {
             preparedStatement.setInt(1, craftNumber);
             preparedStatement.setDate(2, startDate);
             preparedStatement.setDate(3, endDate);
-
             resultSet = preparedStatement.executeQuery();
 
             ObservableList<Component> componentData = FXCollections.observableArrayList();
@@ -641,7 +665,6 @@ public class WorkController {
     }
 
 
-
     private int getNewProductId(Connection connection) {
         int newProductId = 0;
 
@@ -691,7 +714,6 @@ public class WorkController {
         return cell;
     }
 
-    // Метод для отримання PdfPCell з текстом
     private PdfPCell getCell(String text) {
         return getCell(text, false);
     }

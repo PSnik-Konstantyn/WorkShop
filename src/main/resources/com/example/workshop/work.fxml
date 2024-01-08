@@ -3,6 +3,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.XYChart.Series?>
+<?import javafx.scene.chart.CategoryAxis?>
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" fx:controller="com.example.workshop.WorkController"
             xmlns:fx="http://javafx.com/fxml/1">
     <stylesheets>
@@ -62,6 +66,17 @@
                                 </columns>
                             </TableView>
                         </VBox>
+
+                        <VBox spacing="10" GridPane.columnIndex="2" fx:id="graphContainer">
+                            <LineChart fx:id="productionChart">
+                                <xAxis>
+                                    <CategoryAxis label="Дата" />
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Кількість продукції" />
+                                </yAxis>
+                            </LineChart>
+                        </VBox>
                     </GridPane>
 
                     <HBox spacing="3">
@@ -69,6 +84,7 @@
                     </HBox>
                 </VBox>
             </Tab>
+
 
             <Tab text="Редагувати">
                 <VBox spacing="10" alignment="CENTER">
